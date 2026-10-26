@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Klipo – AI Clipper</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0e09;--panel:#121a10;--line:#243020;--tx:#eef3e6;--mut:#8a9a80;--lime:#c8f53a;box-sizing:border-box;color-scheme:dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:400 16px/1.5 Outfit,system-ui,sans-serif;overflow-x:hidden}
+.glow{position:fixed;inset:-20%;pointer-events:none;background:radial-gradient(40% 35% at 20% 10%,#c8f53a22,transparent 70%),radial-gradient(35% 30% at 85% 60%,#5fa8281a,transparent 70%);animation:drift 18s ease-in-out infinite alternate;will-change:transform}
+@keyframes drift{to{transform:translate3d(4%,6%,0) scale(1.1)}}
+.wrap{position:relative;max-width:1080px;margin:0 auto;padding:20px 18px 60px}
+nav{display:flex;justify-content:space-between;align-items:center;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.logo{display:flex;gap:10px;align-items:center;font-weight:800;letter-spacing:.02em}
+.logo i{width:22px;height:22px;border-radius:7px;background:var(--lime);display:block;transform:rotate(-8deg)}
+nav small{color:var(--mut)}
+h1{font-size:clamp(34px,8vw,64px);line-height:1.04;margin:34px 0 10px;font-weight:800;letter-spacing:-.02em}
+h1 .l,.lime{color:var(--lime)}
+.w{display:inline-block;opacity:0;transform:translate3d(0,24px,0);animation:up .8s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes up{to{opacity:1;transform:none}}
+.sub{color:var(--mut);max-width:46ch;margin:0 0 24px}
+.drop{border:1.5px dashed #3a4c33;border-radius:22px;padding:34px 18px;text-align:center;background:var(--panel);cursor:pointer;transition:transform .35s cubic-bezier(.2,.8,.2,1),border-color .3s,background .3s}
+.drop:hover,.drop.on{border-color:var(--lime);transform:translateY(-3px);background:#16200f}
+.drop b{display:block;font-size:20px}.drop span{color:var(--mut);font-size:14px}
+.ring{width:54px;height:54px;border-radius:50%;margin:0 auto 12px;border:2px solid var(--lime);display:grid;place-items:center;color:var(--lime);font-size:26px;animation:pulse 2.4s ease-out infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 #c8f53a55}100%{box-shadow:0 0 0 22px #c8f53a00}}
+#work{display:none;margin-top:28px;grid-template-columns:1fr;gap:20px}
+#work.show{display:grid;animation:up .7s cubic-bezier(.2,.8,.2,1)}
+@media(min-width:860px){#work{grid-template-columns:320px 1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:16px}
+.phone{position:relative;border-radius:26px;overflow:hidden;background:#000;aspect-ratio:var(--ar,9/16);max-width:320px;margin:0 auto;border:1px solid var(--line)}
+canvas{display:block;width:100%;height:100%}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.seg{display:flex;background:#0c130a;border:1px solid var(--line);border-radius:14px;padding:4px;position:relative}
+.seg button{flex:1;position:relative;z-index:1;background:none;border:0;color:var(--mut);font:inherit;font-weight:500;padding:9px 10px;border-radius:10px;cursor:pointer;transition:color .25s}
+.seg button.on{color:#0a0e09}
+.pill{position:absolute;top:4px;bottom:4px;left:4px;border-radius:10px;background:var(--lime);transition:transform .45s cubic-bezier(.2,.9,.2,1),width .45s;will-change:transform}
+label{font-size:13px;color:var(--mut);display:block;margin:14px 0 6px}
+label em{float:right;font-style:normal;color:var(--lime)}
+input[type=range]{width:100%;accent-color:var(--lime)}
+textarea,select{width:100%;background:#0c130a;border:1px solid var(--line);color:var(--tx);border-radius:12px;padding:10px;font:inherit}
+input[type=color]{width:40px;height:34px;border:0;background:none;padding:0}
+.btn{background:var(--lime);color:#0a0e09;border:0;border-radius:14px;font:inherit;font-weight:700;padding:13px 18px;cursor:pointer;transition:transform .2s,box-shadow .3s;position:relative;overflow:hidden}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px #c8f53a40}.btn:active{transform:scale(.96)}
+.btn.g{background:#1b2616;color:var(--tx);border:1px solid var(--line)}
+.btn[disabled]{opacity:.5;pointer-events:none}
+.bar{height:3px;background:var(--line);border-radius:3px;margin-top:14px;overflow:hidden}.bar i{display:block;height:100%;width:0;background:var(--lime);transition:width .3s}
+#tl{touch-action:none;width:100%;height:84px;border-radius:12px;background:#0c130a;cursor:pointer;margin-top:14px}
+.clips{display:grid;gap:10px;margin-top:14px}
+.clip{display:flex;align-items:center;gap:12px;padding:12px;border-radius:16px;border:1px solid var(--line);background:#0e150c;cursor:pointer;transition:transform .3s cubic-bezier(.2,.8,.2,1),border-color .3s;animation:pop .5s cubic-bezier(.2,1.2,.3,1) backwards}
+.clip:hover{transform:translateX(4px)}.clip.on{border-color:var(--lime);background:#16200f}
+@keyframes pop{from{opacity:0;transform:scale(.9) translateY(10px)}}
+.score{min-width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-weight:800;background:#c8f53a1c;color:var(--lime)}
+.clip p{margin:0;font-size:14px}.clip small{color:var(--mut)}
+.clip .x{margin-left:auto;background:none;border:0;color:var(--mut);font-size:18px;cursor:pointer}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,40px);background:var(--lime);color:#0a0e09;padding:10px 18px;border-radius:99px;font-weight:700;opacity:0;transition:.4s cubic-bezier(.2,.8,.2,1);z-index:9}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+h3{margin:0 0 4px;font-size:18px}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style></head><body>
+<div class="glow"></div>
+<div class="wrap">
+<nav><div class="logo"><i></i>KLIPO</div><small>Unlimited edition</small></nav>
+<h1><span class="w" style="animation-delay:.05s">Satu video.</span><br><span class="w l" style="animation-delay:.25s">Konten jalan terus.</span></h1>
+<p class="sub">Upload video panjang, AI mencari momen terbaik, lalu jadi klip vertikal berkaption. Tanpa kuota, semua diproses di perangkatmu.</p>
+<label class="drop" id="drop" style="margin:0"><input id="file" type="file" accept="video/*" hidden>
+<div class="ring">↑</div><b>Pilih atau seret video</b><span>MP4, MOV, WebM · diproses lokal, tidak diunggah</span></label>
+<div class="row" style="margin-top:12px"><input id="lu" placeholder="Tempel link YouTube, Instagram, atau TikTok" style="flex:1;min-width:200px;background:#0c130a;border:1px solid var(--line);color:var(--tx);border-radius:12px;padding:12px;font:inherit"><button class="btn" id="lk">Ambil dari link</button></div>
+<small style="color:var(--mut)">Fitur link butuh server lokal (server.py). Pakai hanya untuk video milikmu atau yang kamu punya izinnya.</small>
+
+<div id="work">
+<div>
+<div class="phone"><canvas id="cv" width="540" height="960"></canvas></div>
+<div class="row" style="justify-content:center;margin-top:12px">
+<button class="btn g" id="play">Putar klip</button><button class="btn" id="exp">Ekspor klip</button><button class="btn g" id="expall">Ekspor semua</button></div>
+<div class="row" style="justify-content:center;margin-top:8px"><select id="ar" style="width:auto"><option value="9/16">9:16</option><option value="1/1">1:1</option><option value="16/9">16:9</option></select><button class="btn g" id="un" aria-label="Undo">↶</button><button class="btn g" id="re" aria-label="Redo">↷</button><button class="btn g" id="sv">Simpan proyek</button></div>
+<div class="bar"><i id="eb"></i></div>
+</div>
+<div>
+<div class="card">
+<h3>Pilih klip</h3>
+<div class="seg" id="seg"><div class="pill" id="pill"></div><button class="on" data-m="auto">Auto</button><button data-m="manual">Manual</button><button data-m="ai">Manual + AI</button></div>
+<label>Jumlah klip <em id="nv">5</em></label><input type="range" id="n" min="1" max="12" value="5">
+<label>Durasi tiap klip <em id="dv">30 dtk</em></label><input type="range" id="d" min="10" max="90" step="5" value="30">
+<div class="row" style="margin-top:16px"><button class="btn" id="gen">Generate klip</button><button class="btn g" id="add">+ Klip di posisi ini</button></div>
+<div class="bar"><i id="pb"></i></div>
+<canvas id="tl" width="900" height="84"></canvas>
+<div class="clips" id="list"></div>
+</div>
+<div class="card" style="margin-top:20px">
+<h3>Caption editor</h3>
+<label>Teks caption (kata ditampilkan satu per satu)</label>
+<textarea id="txt" rows="3"></textarea>
+<div class="row" style="margin-top:12px">
+<span style="color:var(--mut);font-size:13px">Warna</span><input type="color" id="c1" value="#ffffff">
+<span style="color:var(--mut);font-size:13px">Sorot</span><input type="color" id="c2" value="#c8f53a">
+<select id="pos" style="width:auto"><option value="0.72">Bawah</option><option value="0.5">Tengah</option><option value="0.25">Atas</option></select></div>
+<label>Ukuran font <em id="fv">64</em></label><input type="range" id="fs" min="36" max="100" value="64">
+<label>Garis tepi</label><input type="range" id="sk" min="0" max="30" value="16">
+<div class="row" style="margin-top:12px"><select id="ft" style="width:auto"><option>Outfit</option><option>Impact</option><option>Georgia</option><option>Courier New</option></select><select id="an" style="width:auto"><option value="pop">Animasi: Pop</option><option value="bounce">Bounce</option><option value="type">Typewriter</option><option value="slide">Slide</option></select></div>
+<label>Preset gaya</label><div class="row" id="pre"><button class="btn g" data-p="0">Lime</button><button class="btn g" data-p="1">Kotak</button><button class="btn g" data-p="2">Minimal</button></div>
+<label>Watermark</label><textarea id="wm" rows="1" placeholder="@namakamu"></textarea>
+<label>Judul dan hashtag</label><textarea id="tt" rows="2" readonly></textarea><button class="btn g" id="cp" style="margin-top:8px">Salin</button>
+</div></div></div></div>
+<div id="toast"></div>
+<video id="v" playsinline preload="auto" style="display:none"></video>
+<script>
+const $=id=>document.getElementById(id),v=$('v'),cv=$('cv'),cx=cv.getContext('2d'),tl=$('tl'),tx=tl.getContext('2d');
+let url,dur=0,en=[],clips=[],sel=-1,mode='auto',playing=false,rec=null,raf=0,fname='',hist=[],fut=[],box=false,done=null,drag=null;
+const STEP=.5;
+const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2200)};
+const fmt=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
+const DEF='Ini momen yang paling penting dari video kamu';
+
+// upload
+const drop=$('drop');
+['dragover','dragenter'].forEach(e=>drop.addEventListener(e,x=>{x.preventDefault();drop.classList.add('on')}));
+['dragleave','drop'].forEach(e=>drop.addEventListener(e,()=>drop.classList.remove('on')));
+drop.addEventListener('drop',e=>{e.preventDefault();load(e.dataTransfer.files[0])});
+$('file').onchange=e=>load(e.target.files[0]);
+async function load(f){
+  if(!f||!f.type.startsWith('video'))return toast('Pilih file video');
+  if(url)URL.revokeObjectURL(url);
+  url=URL.createObjectURL(f);v.src=url;fname='klipo:'+f.name+f.size;clips=[];sel=-1;hist=[];fut=[];renderList();
+  await new Promise(r=>v.onloadedmetadata=r);dur=v.duration;
+  $('work').classList.add('show');$('work').scrollIntoView({behavior:'smooth'});
+  v.currentTime=0;en=[];drawTL();draw();
+  analyze(f);
+}
+async function analyze(f){
+  $('pb').style.width='10%';
+  try{
+    const ac=new (window.AudioContext||window.webkitAudioContext)();
+    const buf=await ac.decodeAudioData(await f.arrayBuffer());
+    const d=buf.getChannelData(0),n=Math.floor(buf.sampleRate*STEP),out=[];
+    for(let i=0;i+n<=d.length;i+=n){let s=0;for(let j=0;j<n;j+=8)s+=d[i+j]*d[i+j];out.push(Math.sqrt(s/(n/8)))}
+    const mx=Math.max(...out)||1;en=out.map(x=>x/mx);ac.close();
+  }catch(e){en=Array.from({length:Math.ceil(dur/STEP)},(_,i)=>.3+.5*Math.abs(Math.sin(i*.37)*Math.cos(i*.11)));toast('Audio tidak terbaca, pakai estimasi')}
+  $('pb').style.width='100%';drawTL();
+  try{const s=localStorage.getItem(fname);if(s){clips=JSON.parse(s);renderList();if(clips.length)choose(0);toast('Proyek tersimpan dimuat');return}}catch(e){}
+  toast('Video siap dianalisis');
+}
+
+// AI highlight scoring: loud + dynamic windows
+function pick(n,L){
+  const w=Math.max(2,Math.round(L/STEP)),sc=[];
+  for(let i=0;i+w<=en.length;i+=2){
+    let m=0,q=0;for(let j=i;j<i+w;j++){m+=en[j];q+=en[j]*en[j]}
+    m/=w;const sd=Math.sqrt(Math.max(0,q/w-m*m));sc.push({i,s:m*.7+sd*1.6})
+  }
+  sc.sort((a,b)=>b.s-a.s);const res=[];
+  for(const c of sc){if(res.length>=n)break;if(res.every(r=>Math.abs(r.i-c.i)>=w))res.push(c)}
+  const mx=Math.max(...res.map(r=>r.s),.001);
+  return res.sort((a,b)=>a.i-b.i).map(r=>({s:r.i*STEP,e:Math.min(dur,r.i*STEP+L),score:Math.round(60+40*r.s/mx),text:DEF}));
+}
+$('gen').onclick=async()=>{
+  if(!en.length)return toast('Tunggu analisis selesai');
+  if(mode==='manual')return toast('Mode Manual: pakai tombol + Klip');
+  const b=$('gen');b.disabled=true;b.textContent='Menganalisis…';
+  for(let p=10;p<=100;p+=18){$('pb').style.width=p+'%';await new Promise(r=>setTimeout(r,120))}
+  snap();clips=pick(+$('n').value,+$('d').value);b.disabled=false;b.textContent='Generate lagi';
+  renderList();if(clips.length)choose(0);else toast('Tidak ada klip ditemukan')
+};
+$('add').onclick=()=>{
+  snap();const s=Math.min(v.currentTime,Math.max(0,dur-1)),L=+$('d').value;
+  clips.push({s,e:Math.min(dur,s+L),score:0,text:DEF});clips.sort((a,b)=>a.s-b.s);
+  renderList();choose(clips.findIndex(c=>c.s===s))
+};
+
+// UI
+function setMode(m){
+  mode=m;const b=[...$('seg').children].filter(x=>x.dataset.m);
+  b.forEach(x=>x.classList.toggle('on',x.dataset.m===m));
+  const on=b.find(x=>x.dataset.m===m);$('pill').style.width=on.offsetWidth+'px';$('pill').style.transform=`translateX(${on.offsetLeft-4}px)`;
+  $('gen').style.display=m==='manual'?'none':'';
+}
+$('seg').onclick=e=>{if(e.target.dataset.m)setMode(e.target.dataset.m)};
+setTimeout(()=>setMode('auto'),50);addEventListener('resize',()=>setMode(mode));
+$('n').oninput=e=>$('nv').textContent=e.target.value;
+$('d').oninput=e=>$('dv').textContent=e.target.value+' dtk';
+$('fs').oninput=e=>$('fv').textContent=e.target.value;
+$('txt').oninput=e=>{if(clips[sel])clips[sel].text=e.target.value};
+function renderList(){
+  const l=$('list');l.innerHTML='';
+  clips.forEach((c,i)=>{
+    const d=document.createElement('div');d.className='clip'+(i===sel?' on':'');d.style.animationDelay=i*60+'ms';
+    d.innerHTML=`<div class="score">${c.score||'—'}</div><div><p>Klip ${i+1}</p><small>${fmt(c.s)} – ${fmt(c.e)} · ${Math.round(c.e-c.s)} dtk</small></div><button class="x" aria-label="Hapus">✕</button>`;
+    d.onclick=e=>{if(e.target.classList.contains('x')){snap();clips.splice(i,1);if(sel>=clips.length)sel=clips.length-1;renderList();drawTL();return}choose(i)};
+    l.appendChild(d)});
+  drawTL();
+}
+function choose(i){sel=i;[...$('list').children].forEach((d,k)=>d.classList.toggle('on',k===i));$('txt').value=clips[i].text;$('tt').value=`Klip ${i+1} – momen terbaik di menit ${fmt(clips[i].s)}\n#fyp #klip #viral #podcast`;seek(clips[i].s);drawTL();}
+function seek(t){v.currentTime=t;v.addEventListener('seeked',draw,{once:true})}
+
+// timeline
+function drawTL(){
+  const W=tl.width,H=tl.height;tx.clearRect(0,0,W,H);if(!dur)return;
+  clips.forEach((c,i)=>{tx.fillStyle=i===sel?'#c8f53a40':'#c8f53a18';tx.fillRect(c.s/dur*W,0,(c.e-c.s)/dur*W,H)});
+  const bw=W/Math.max(en.length,1);tx.fillStyle='#8a9a80';
+  en.forEach((e,i)=>{const h=Math.max(2,e*H*.9);tx.fillRect(i*bw,(H-h)/2,Math.max(1,bw-1),h)});
+  tx.fillStyle='#fff';tx.fillRect(v.currentTime/dur*W-1,0,2,H);
+  const c=clips[sel];if(c){tx.fillStyle='#c8f53a';tx.fillRect(c.s/dur*W-3,0,6,H);tx.fillRect(c.e/dur*W-3,0,6,H)}
+}
+const tpos=e=>{const r=tl.getBoundingClientRect();return(e.clientX-r.left)/r.width*dur};
+tl.onpointerdown=e=>{const t=tpos(e),c=clips[sel],tol=dur*.03;drag=null;if(c){if(Math.abs(t-c.s)<tol)drag='s';else if(Math.abs(t-c.e)<tol)drag='e'}if(drag){snap();tl.setPointerCapture(e.pointerId)}else seek(t)};
+tl.onpointermove=e=>{if(!drag)return;const c=clips[sel],t=Math.max(0,Math.min(dur,tpos(e)));if(drag==='s')c.s=Math.min(t,c.e-1);else c.e=Math.max(t,c.s+1);drawTL()};
+tl.onpointerup=()=>{if(drag){drag=null;renderList();seek(clips[sel].s)}};
+
+// render preview (9:16 cover crop + animated word captions)
+function draw(){
+  const W=cv.width,H=cv.height;cx.fillStyle='#000';cx.fillRect(0,0,W,H);
+  if(v.videoWidth){
+    const k=Math.max(W/v.videoWidth,H/v.videoHeight),w=v.videoWidth*k,h=v.videoHeight*k;
+    cx.drawImage(v,(W-w)/2,(H-h)/2,w,h)}
+  if($('wm').value){cx.font='700 28px Outfit,sans-serif';cx.textAlign='right';cx.textBaseline='alphabetic';cx.fillStyle='#ffffffaa';cx.fillText($('wm').value,W-24,52)}
+  const c=clips[sel];if(!c)return;
+  const words=(c.text||'').trim().split(/\s+/).filter(Boolean);if(!words.length)return;
+  const p=Math.min(.999,Math.max(0,(v.currentTime-c.s)/Math.max(.1,c.e-c.s))),idx=Math.floor(p*words.length);
+  const g=Math.floor(idx/3)*3,grp=words.slice(g,g+3),fs=+$('fs').value;
+  const local=(p*words.length)%1,an=$('an').value,kk=Math.max(0,1-local*5),pop=an==='pop'?1+.18*kk:1,dy=an==='bounce'?-fs*.25*kk:0,dx=an==='slide'?-fs*.5*kk:0;
+  cx.font=`800 ${fs}px ${$('ft').value},sans-serif`;cx.textAlign='left';cx.textBaseline='middle';
+  const ws=grp.map(x=>cx.measureText(x.toUpperCase()).width),gap=fs*.3,tot=ws.reduce((a,b)=>a+b,0)+gap*(grp.length-1);
+  let x=(W-tot)/2;const y=H*(+$('pos').value);
+  grp.forEach((wd,i)=>{if(an==='type'&&g+i>idx){x+=ws[i]+gap;return}
+    const act=g+i===idx;cx.save();cx.translate(x+ws[i]/2+dx,y+dy);if(act)cx.scale(pop,pop);
+    cx.textAlign='center';cx.lineWidth=fs*$('sk').value/100;cx.strokeStyle='#000';cx.lineJoin='round';
+    if(box&&act){cx.fillStyle=$('c2').value;cx.fillRect(-ws[i]/2-14,-fs*.62,ws[i]+28,fs*1.24)}if(+$('sk').value)cx.strokeText(wd.toUpperCase(),0,0);cx.fillStyle=act?(box?'#0a0e09':$('c2').value):$('c1').value;cx.fillText(wd.toUpperCase(),0,0);cx.restore();x+=ws[i]+gap});
+}
+function loop(){
+  const c=clips[sel];
+  if(c&&v.currentTime>=c.e){v.pause();playing=false;$('play').textContent='Putar klip';if(rec){rec.stop()}}
+  draw();if(Math.random()<.1)drawTL();
+  if(playing)raf=requestAnimationFrame(loop)}
+function play(){const c=clips[sel];if(!c)return toast('Pilih klip dulu');
+  if(playing){v.pause();playing=false;$('play').textContent='Putar klip';return}
+  if(v.currentTime<c.s||v.currentTime>=c.e-.1)v.currentTime=c.s;
+  v.play();playing=true;$('play').textContent='Jeda';loop()}
+$('play').onclick=play;
+
+// export vertical clip with captions (real-time record)
+$('exp').onclick=async()=>{
+  const c=clips[sel];if(!c)return toast('Pilih klip dulu');
+  if(!window.MediaRecorder)return toast('Browser tidak mendukung ekspor');
+  const vs=cv.captureStream(30);
+  try{const as=(v.captureStream?v.captureStream():v.mozCaptureStream()).getAudioTracks();as.forEach(t=>vs.addTrack(t))}catch(e){toast('Audio tidak bisa direkam di browser ini')}
+  const ch=[],mt=['video/mp4;codecs=avc1,mp4a.40.2','video/webm;codecs=vp9,opus','video/webm'].find(m=>MediaRecorder.isTypeSupported(m)),ext=mt.startsWith('video/mp4')?'mp4':'webm';rec=new MediaRecorder(vs,{mimeType:mt,videoBitsPerSecond:5e6});
+  rec.ondataavailable=e=>e.data.size&&ch.push(e.data);
+  rec.onstop=()=>{rec=null;if(done){const d=done;done=null;setTimeout(d,400)}clearInterval(t);$('eb').style.width='100%';
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(ch,{type:mt}));a.download=`klipo-klip-${sel+1}.${ext}`;a.click();toast('Klip diekspor')};
+  v.currentTime=c.s;await new Promise(r=>v.addEventListener('seeked',r,{once:true}));
+  rec.start();$('eb').style.width='0';playing=false;play();
+  const t=setInterval(()=>$('eb').style.width=Math.min(100,(v.currentTime-c.s)/(c.e-c.s)*100)+'%',200);
+};
+// undo / redo
+const snap=()=>{hist.push(JSON.stringify(clips));if(hist.length>30)hist.shift();fut=[]};
+const restore=(a,b)=>{if(!a.length)return toast('Tidak ada lagi');b.push(JSON.stringify(clips));clips=JSON.parse(a.pop());if(sel>=clips.length)sel=clips.length-1;renderList();if(clips[sel])$('txt').value=clips[sel].text};
+$('un').onclick=()=>restore(hist,fut);$('re').onclick=()=>restore(fut,hist);
+// rasio
+$('ar').onchange=e=>{const r=e.target.value;cv.width=r==='16/9'?960:r==='1/1'?720:540;cv.height=r==='16/9'?540:r==='1/1'?720:960;document.documentElement.style.setProperty('--ar',r);draw()};
+// preset caption
+$('pre').onclick=e=>{const p=e.target.dataset.p;if(p===undefined)return;box=p==='1';const P={0:['#ffffff','#c8f53a',16,'Outfit'],1:['#ffffff','#c8f53a',0,'Outfit'],2:['#ffffff','#ffffff',8,'Georgia']}[p];$('c1').value=P[0];$('c2').value=P[1];$('sk').value=P[2];$('ft').value=P[3];draw()};
+document.querySelectorAll('input,select,textarea').forEach(el=>el.addEventListener('input',()=>{if(!playing)draw()}));
+// simpan, salin, ekspor semua
+$('sv').onclick=()=>{try{localStorage.setItem(fname,JSON.stringify(clips));toast('Proyek disimpan')}catch(e){toast('Gagal menyimpan')}};
+$('cp').onclick=()=>{navigator.clipboard.writeText($('tt').value).then(()=>toast('Tersalin'),()=>toast('Gagal menyalin'))};
+$('expall').onclick=async()=>{if(!clips.length)return toast('Belum ada klip');for(let i=0;i<clips.length;i++){choose(i);await new Promise(r=>setTimeout(r,500));await new Promise(r=>{done=r;$('exp').click()})}toast('Semua klip diekspor')};
+// ambil video dari link (lewat server.py)
+$('lk').onclick=async()=>{const u=$('lu').value.trim();if(!/^https?:\/\//.test(u))return toast('Tempel link yang valid');
+ const b=$('lk');b.disabled=true;b.textContent='Mengambil…';
+ try{const r=await fetch('/api/fetch?url='+encodeURIComponent(u));if(!r.ok)throw new Error(r.status);const bl=await r.blob();if(!bl.size)throw new Error('kosong');await load(new File([bl],'link-'+Date.now()+'.mp4',{type:bl.type.startsWith('video')?bl.type:'video/mp4'}))}
+ catch(e){toast('Gagal. Jalankan server.py lalu buka localhost:8765')}
+ b.disabled=false;b.textContent='Ambil dari link'};
+</script></body></html>
